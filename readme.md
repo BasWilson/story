@@ -1,6 +1,6 @@
 # Story - AI-Powered Task Management for Developers
 
-Story is a CLI tool that helps developers manage their tasks by generating actionable steps from user stories using AI (OpenAI GPT-4). It maintains project context and tracks progress through user stories and tasks.
+Story is a CLI tool that helps developers manage their tasks by generating actionable steps from user stories using AI ([provider independent](#ai-model-configuration)). It maintains project context and tracks progress through user stories and tasks.
 
 ## Features
 
@@ -9,6 +9,10 @@ Story is a CLI tool that helps developers manage their tasks by generating actio
 -   ✅ Tracks task completion status
 -   💾 Persistent storage of project data per repository
 -   🎯 Focus on the next actionable task
+
+<!-- Image -->
+
+![Showcase](./docs/showcase.gif)
 
 ## Installation
 
