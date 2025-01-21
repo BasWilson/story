@@ -40,13 +40,14 @@ go build -o story cmd/tool/main.go
 
 6. Recommend (but optional) add to profile
 
-Add the `OPENAI_API_KEY` to your ~/.zshrc profile for use everywhere. Add an alias to the path of the executable in your ~/.zshrc profile for use everywhere like so:
+Add an alias and `OPENAI_API_KEY` to the path of the executable in your ~/.zshrc profile (or similar) for use everywhere like so:
 
 ```bash
 nano ~/.zshrc
 ```
 
 ```bash
+export OPENAI_API_KEY=your-key
 alias story="/Path/To/Your/Executable/story"
 ```
 
