@@ -142,7 +142,7 @@ func Help() {
     fmt.Println("  new-story                  - Add a new user story and generate tasks")
     fmt.Println("  next-task                  - Show the next incomplete task for the active story")
     fmt.Println("  complete-task [taskIndex?]  - Mark the current or a specific task as complete")
-    fmt.Println("  show-status                - Show the current user story and next task")
+    fmt.Println("  status                - Show the current user story and next task")
     fmt.Println("  help                       - Show this help menu")
 }
 

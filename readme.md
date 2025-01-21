@@ -62,7 +62,7 @@ After that you can just run it in any folder with persistance by using `story`
 | `new-story`           | Add a new user story and generate tasks                               |
 | `next-task`           | Show the next incomplete task for the active story                    |
 | `complete-task [idx]` | Mark the current or a specific task as complete (optional task index) |
-| `show-status`         | Show the current user story and next task                             |
+| `status`              | Show the current user story and next task                             |
 | `help`                | Show the help menu                                                    |
 
 ### Example Workflow
@@ -106,7 +106,7 @@ After that you can just run it in any folder with persistance by using `story`
 7. Check progress
 
 ```bash
-./story show-status
+./story status
 ```
 
 ## Data Storage

@@ -51,7 +51,7 @@ func main() {
 			taskIndex = os.Args[2]
 		}
 		err = internal.CompleteTask(data, taskIndex)
-	case "show-status":
+	case "status":
 		internal.ShowStatus(data)
 	case "help":
 		internal.Help()
