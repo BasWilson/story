@@ -1,0 +1,4 @@
+# Go lang ignore file
+.env
+story
+build
