@@ -1,27 +1,32 @@
 package internal
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
-
-	openai "github.com/sashabaranov/go-openai"
 )
 
 type GPTClient struct {
-    client *openai.Client
+	apiKey string
+	model  string
+    baseUrl string
 }
 
-func NewGPTClient(apiKey string) *GPTClient {
-    c := openai.NewClient(apiKey)
-    return &GPTClient{
-        client: c,
-    }
+func NewGPTClient(apiKey string, model string, baseUrl string) *GPTClient {
+	return &GPTClient{
+		apiKey: apiKey,
+		model:  model,
+		baseUrl: baseUrl,
+	}
 }
 
 // GenerateTasks uses the user story & context to produce a list of tasks
 func (g *GPTClient) GenerateTasks(ctx context.Context, projectContext ProjectContext, userStory string) ([]string, error) {
-    prompt := fmt.Sprintf(`
+	prompt := fmt.Sprintf(`
 Given the following project context and user story, please produce a detailed list of tasks:
 
 Project Context:
@@ -34,65 +39,98 @@ User Story: %s
 
 Output ONLY the tasks as bullet points, no other text.
 `,
-        projectContext.Language,
-        projectContext.Framework,
-        projectContext.Role,
-        projectContext.ProjectDescription,
-        userStory,
-    )
+		projectContext.Language,
+		projectContext.Framework,
+		projectContext.Role,
+		projectContext.ProjectDescription,
+		userStory,
+	)
 
-    resp, err := g.client.CreateChatCompletion(
-        ctx,
-        openai.ChatCompletionRequest{
-            Model: openai.GPT4, // or whatever GPT-4 model you have access to
-            Messages: []openai.ChatCompletionMessage{
-                {
-                    Role:    openai.ChatMessageRoleSystem,
-                    Content: "You are a helpful assistant.",
-                },
-                {
-                    Role:    openai.ChatMessageRoleUser,
-                    Content: prompt,
-                },
-            },
-            Temperature: 0.7,
-        },
-    )
-    if err != nil {
-        return nil, err
-    }
+	requestBody := map[string]interface{}{
+		"model": g.model,
+		"messages": []map[string]string{
+			{
+				"role":    "system",
+				"content": "You are a helpful assistant.",
+			},
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+		"temperature": 0.7,
+	}
 
-    generated := resp.Choices[0].Message.Content
-    // (We’ll want to parse out each bullet point into a slice of task descriptions)
-    tasks := parseTasksFromGPTOutput(generated)
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling request body: %w", err)
+	}
 
-    return tasks, nil
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/chat/completions", g.baseUrl), bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", g.apiKey))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("error decoding response: %w", err)
+	}
+
+	if len(result.Choices) == 0 {
+		return nil, fmt.Errorf("no choices in response")
+	}
+
+	generated := result.Choices[0].Message.Content
+	tasks := parseTasksFromGPTOutput(generated)
+	return tasks, nil
 }
 
 // parseTasksFromGPTOutput is a naive bullet point parser
 func parseTasksFromGPTOutput(output string) []string {
-    lines := strings.Split(output, "\n")
-    tasks := []string{}
+	lines := strings.Split(output, "\n")
+	tasks := []string{}
 
-    for _, line := range lines {
-        trimmed := strings.TrimSpace(line)
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
 
-        // Skip empty lines
-        if trimmed == "" {
-            continue
-        }
+		// Skip empty lines
+		if trimmed == "" {
+			continue
+		}
 
-        // Remove leading bullet characters (like "-", "*", or "•")
-        // so the final string is just the task description
-        trimmed = strings.TrimPrefix(trimmed, "- ")
-        trimmed = strings.TrimPrefix(trimmed, "* ")
-        trimmed = strings.TrimPrefix(trimmed, "• ")
+		// Remove leading bullet characters (like "-", "*", or "•")
+		// so the final string is just the task description
+		trimmed = strings.TrimPrefix(trimmed, "- ")
+		trimmed = strings.TrimPrefix(trimmed, "* ")
+		trimmed = strings.TrimPrefix(trimmed, "• ")
 
-        // Only add to tasks if there's something left
-        if trimmed != "" {
-            tasks = append(tasks, trimmed)
-        }
-    }
+		// Only add to tasks if there's something left
+		if trimmed != "" {
+			tasks = append(tasks, trimmed)
+		}
+	}
 
-    return tasks
+	return tasks
 }

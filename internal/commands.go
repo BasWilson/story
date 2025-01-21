@@ -38,6 +38,7 @@ func NewStory(data *AppData, gpt *GPTClient) error {
     story, _ := reader.ReadString('\n')
     story = strings.TrimSpace(story)
 
+    fmt.Println("\033[1;34mGenerating tasks...\033[0m")
     tasks, err := gpt.GenerateTasks(context.Background(), data.ProjectContext, story)
     if err != nil {
         return err
@@ -58,6 +59,8 @@ func NewStory(data *AppData, gpt *GPTClient) error {
 
     data.UserStories = append(data.UserStories, userStory)
     data.NextStoryID++
+
+    fmt.Println("\033[1;32mTasks generated successfully!\033[0m")
 
     return SaveData(data)
 }
@@ -143,6 +146,7 @@ func Help() {
     fmt.Println("  status                     - Show the current user story and next task")
     fmt.Println("  next-task                  - Show the next incomplete task for the active story")
     fmt.Println("  complete-task [taskIndex?] - Mark the current or a specific task as complete")
+    fmt.Println("  config-info                - Show information about what model and AI Story is using")
     fmt.Println("  help                       - Show this help menu")
 }
 
@@ -163,4 +167,10 @@ func allTasksCompleted(tasks []Task) bool {
         }
     }
     return true
+}
+
+func ConfigInfo() {
+	fmt.Println("Model:", os.Getenv("AI_MODEL"))
+	fmt.Println("API Key:", os.Getenv("AI_API_KEY")[:5]+"..."+os.Getenv("AI_API_KEY")[len(os.Getenv("AI_API_KEY"))-5:])
+	fmt.Println("API Base:", os.Getenv("AI_API_BASE"))
 }

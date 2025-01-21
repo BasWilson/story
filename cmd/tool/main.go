@@ -20,12 +20,23 @@ func main() {
 	}
 
 	// 2. Create GPT client
-	apiKey := os.Getenv("OPENAI_API_KEY")
+	apiKey := os.Getenv("AI_API_KEY")
 	if apiKey == "" {
-		fmt.Println("Please set the OPENAI_API_KEY environment variable.")
+		fmt.Println("Please set the AI_API_KEY environment variable.")
 		os.Exit(1)
 	}
-	gptClient := internal.NewGPTClient(apiKey)
+
+	model := os.Getenv("AI_MODEL")
+	if model == "" {
+		model = "gpt-4o-2024-11-20"
+	}
+
+	baseUrl := os.Getenv("AI_API_BASE")
+	if baseUrl == "" {
+		baseUrl = "https://api.openai.com/v1"
+	}
+
+	gptClient := internal.NewGPTClient(apiKey, model, os.Getenv("AI_API_BASE"))
 
 	// 3. Check CLI args
 	if len(os.Args) < 2 {
@@ -43,6 +54,7 @@ func main() {
 		err = internal.SetContext(data)
 	case "new-story":
 		err = internal.NewStory(data, gptClient)
+		internal.ShowStatus(data)
 	case "next-task":
 		internal.NextTask(data)
 	case "complete-task":
@@ -55,6 +67,8 @@ func main() {
 		internal.ShowStatus(data)
 	case "help":
 		internal.Help()
+	case "config-info":
+		internal.ConfigInfo()
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		internal.Help()
