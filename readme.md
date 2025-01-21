@@ -42,8 +42,9 @@ go build -o story cmd/tool/main.go
    Add the `OPEN_API_KEY` to your ~/.zshrc profile for use everywhere.
    Add an alias to the path of the executable in your ~/.zshrc profile for use everywhere like so:
 
-````
+````bash
 nano ~/.zshrc
+```
 ```bash
 alias story="/Path/To/Your/Executable/story"
 ````
