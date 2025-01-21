@@ -138,11 +138,11 @@ func ShowStatus(data *AppData) {
 
 func Help() {
     fmt.Println("\033[1;36mAvailable commands:\033[0m")
-    fmt.Println("  set-context                - Set project context (language, framework, role)")
+    fmt.Println("  set-context                - Set project context (language, framework, role, description)")
     fmt.Println("  new-story                  - Add a new user story and generate tasks")
+    fmt.Println("  status                     - Show the current user story and next task")
     fmt.Println("  next-task                  - Show the next incomplete task for the active story")
-    fmt.Println("  complete-task [taskIndex?]  - Mark the current or a specific task as complete")
-    fmt.Println("  status                - Show the current user story and next task")
+    fmt.Println("  complete-task [taskIndex?] - Mark the current or a specific task as complete")
     fmt.Println("  help                       - Show this help menu")
 }
 
