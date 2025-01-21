@@ -36,7 +36,7 @@ func main() {
 		baseUrl = "https://api.openai.com/v1"
 	}
 
-	gptClient := internal.NewGPTClient(apiKey, model, os.Getenv("AI_API_BASE"))
+	gptClient := internal.NewGPTClient(apiKey, model, baseUrl)
 
 	// 3. Check CLI args
 	if len(os.Args) < 2 {
